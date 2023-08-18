@@ -1,6 +1,6 @@
 version: '3.3'
 services:
-  git_delete_stale_branches_test:
+  git_delete_stale_branches:
         build:
             args:
                 - USER_UID

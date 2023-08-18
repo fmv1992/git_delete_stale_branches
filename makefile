@@ -2,7 +2,7 @@ SHELL := /bin/bash -euo pipefail
 export ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 export REFERENCE_DIR ?= $(ROOT_DIR)/git_delete_stale_branches
 
-export PROJECT ?= git_delete_stale_branches_test
+export PROJECT ?= git_delete_stale_branches
 
 export USER_UID := $(shell id -u)
 export USER_GID := $(shell id -g)
@@ -118,7 +118,7 @@ docker_run:
         run \
         --rm \
         --entrypoint '' \
-        git_delete_stale_branches_test \
+        git_delete_stale_branches \
         $(DOCKER_CMD_RUN)
 
 down:

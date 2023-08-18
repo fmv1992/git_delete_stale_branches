@@ -23,8 +23,8 @@ mandb
 # Test the program.
 mkdir /tmp/test01
 cd /tmp/test01
-tar -xf /home/ubuntu_user/git_delete_stale_branches_test/other/test/data/fake_repos_01.tar
-cd ./git_delete_stale_branches_test_fake_git_repos_01
+tar -xf /home/ubuntu_user/git_delete_stale_branches/other/test/data/fake_repos_01.tar
+cd ./git_delete_stale_branches_fake_git_repos_01
 
 git status
 

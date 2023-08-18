@@ -15,11 +15,11 @@ exit 0
 set -euo pipefail
 
 # Start from a clean state.
-rm -rf /tmp/gnu_make_api/tests/test_git_delete_stale_branches_test
-mkdir -p /tmp/gnu_make_api/tests/test_git_delete_stale_branches_test
+rm -rf /tmp/gnu_make_api/tests/test_git_delete_stale_branches
+mkdir -p /tmp/gnu_make_api/tests/test_git_delete_stale_branches
 
 # Setup a git branch with 3 branches: `a`, `ab` and `b`.
-cd /tmp/gnu_make_api/tests/test_git_delete_stale_branches_test
+cd /tmp/gnu_make_api/tests/test_git_delete_stale_branches
 git init .
 git commit --allow-empty -m "first (empty commit)"
 for branch_ in a ab b; do
