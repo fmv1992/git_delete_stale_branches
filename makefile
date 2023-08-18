@@ -147,6 +147,9 @@ docs/manpage.md.clean: docs/manpage.md
 
 #  --- }}}
 
+git_delete_stale_branches:
+	git_delete_stale_branches --delete --git-directory . --config-directory ./other/git/branches
+
 .FORCE:
 
 # vim: set filetype=make fileformat=unix nowrap spell spelllang=en :
