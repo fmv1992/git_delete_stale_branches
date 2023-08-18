@@ -1,0 +1,36 @@
+#! /usr/bin/env bash
+#
+# ```
+# bash -xv other/test/docker/docker_test_02
+# ```
+#
+# Test using a non conventional directory structure.
+
+# Halt on error.
+set -euxo pipefail
+
+# Go to execution directory.
+cd "$(dirname $(readlink -f "${0}"))"
+
+sudo dpkg -i /opt/deb/*.deb
+
+# Test the program.
+mkdir /tmp/test01
+cd /tmp/test01
+tar -xf /home/ubuntu_user/git_delete_stale_branches/other/test/data/fake_repos_01.tar
+cd ./git_delete_stale_branches_fake_git_repos_01
+
+git rev-parse --verify branch01
+git rev-parse --verify branch02
+
+mkdir another/
+mv other/git/branches/ another/branches
+
+git_delete_stale_branches --delete --git-directory /tmp/test01/git_delete_stale_branches_fake_git_repos_01 --config-directory another/branches
+
+! git rev-parse --verify branch01
+git rev-parse --verify branch02
+
+rm -rf /tmp/test01
+
+# vim: set filetype=sh fileformat=unix nowrap:

@@ -3,55 +3,20 @@
 # Halt on error.
 set -euxo pipefail
 
+# function git_check_branch_exists() {
+#   git rev-parse --verify <branch_name>
+# }
+
 # Go to execution directory.
 cd "$(dirname $(readlink -f "${0}"))"
 
-# Add `man` support.
-sudo apt-get update
-sudo apt-get install -y man manpages-posix
-# For the transposition function.
-sudo apt-get install -y python3
-yes | sudo unminimize || true
-
-# Install our program.
-#
-# This has to come after the setup.
 sudo dpkg -i /opt/deb/*.deb
-mandb
-[[ $(find / -iname 'git_delete_stale_branches.1.gz' 2> /dev/null | wc -l) -gt 0 ]]
 
-# Test the program.
-mkdir /tmp/test01
-cd /tmp/test01
-tar -xf /home/ubuntu_user/git_delete_stale_branches/other/test/data/fake_repos_01.tar
-cd ./git_delete_stale_branches_fake_git_repos_01
+bash -xv ./docker_test_01
 
-git status
-
-# Ensure we have 3 branches.
-[[ $(git branch -a) == $(git branch -a | grep -E 'branch01|branch02|main') ]]
-
-# Execute the deletion.
-git_delete_stale_branches --delete --git-directory $(pwd) --config-directory other/git/branches
-
-# Ensure we have 3 branches.
-[[ $(git branch -a) == $(git branch -a | grep -E 'branch02|main') ]]
-
-# Test the exact number of arguments.
- git_delete_stale_branches --delete && exit 1
- git_delete_stale_branches --delete $(pwd) && exit 1
- git_delete_stale_branches --delete $(pwd) other/git/branches/ dummy_args && exit 1
- git_delete_stale_branches --delete --git-directory $(pwd) --config_directory other/git/branches && exit 1
- git_delete_stale_branches --delete --git-directory $(pwd) --config-directory other/git/branches xyz && exit 1
+bash -xv ./docker_test_02
 
 echo "Success." > /dev/stderr
 exit 0
-
-# Make sure that the setup is right.
-#
-# Test setup for man pages.
-PAGER=cat man cat
-# Test our man page.
-PAGER=cat man git_delete_stale_branches
 
 # vim: set filetype=sh fileformat=unix nowrap:

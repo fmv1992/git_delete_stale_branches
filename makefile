@@ -107,7 +107,7 @@ ifndef DOCKER_CMD_RUN
 endif
 
 test_docker: package build .FORCE
-	DOCKER_CMD_RUN='/usr/local/bin/docker_test' make docker_run
+	DOCKER_CMD_RUN='/home/ubuntu_user/git_delete_stale_branches/other/test/docker/docker_test' make docker_run
 
 build: build_prepare readme.md .FORCE
 	docker-compose --file $(DOCKER_COMPOSE_FILE) build $(DOCKER_BUILD_ARGS)

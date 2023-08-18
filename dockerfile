@@ -28,13 +28,10 @@ RUN groupadd --system --gid $USER_GID ubuntu_user \
 USER ubuntu_user
 ENV HOME /home/ubuntu_user
 RUN mkdir -p $HOME
-RUN mkdir -p $HOME/${PROJECT}
 WORKDIR $HOME/${PROJECT}
 
+COPY --chown=ubuntu_user:ubuntu_user ./ ${HOME}/${PROJECT}
 COPY --chown=ubuntu_user:ubuntu_user ./output/deb/ /opt/deb
-COPY --chown=ubuntu_user:ubuntu_user ./other/test/docker/docker_test /usr/local/bin/docker_test
-
-COPY --chown=ubuntu_user:ubuntu_user ./other/test/data/fake_repos_01.tar ./other/test/data/fake_repos_01.tar
 
 CMD ["bash"]
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]

@@ -73,7 +73,7 @@ if [[ ! -f ${delete_file} ]]; then
     exit 1
 fi
 
-official_file="$(basename "$(readlink -f "${config_directory}/official")")"
+official_file="$(readlink -f "${config_directory}/official")"
 
 validate_other_git_branches_deleted_file "${delete_file}"
 
@@ -88,7 +88,10 @@ while IFS=, read -r date_ branch_; do
 # Halt on error.
 set -euxo pipefail
 
-official_branch="$(cat other/git/branches/official)"
+official_file="${3}"
+delete_file="$(basename "${official_file}")/deleted"
+
+official_branch="$(cat ${official_file})"
 [[ -n ${official_branch} ]]
 [[ $(wc -l <<< ${official_branch}) -eq 1 ]]
 
