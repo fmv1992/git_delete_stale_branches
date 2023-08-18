@@ -31,6 +31,9 @@ when you use machine B? Or what happens if you try to sync deleted
 branches from git when checked out on a branch that needs deletion? This
 is where **git_delete_stale_branches** steps in.
 
+See how it is used here:
+<https://github.com/fmv1992/git_delete_stale_branches/blob/8b077a6370d282a789853ebc29a680465eb25e89/makefile#L150>.
+
 #### Relevant files
 
 -   `official` file: a single line file containing the name of the main
@@ -39,6 +42,9 @@ is where **git_delete_stale_branches** steps in.
     Example:
 
         main
+
+    Example in Github:
+    <https://github.com/fmv1992/git_delete_stale_branches/blob/8b077a6370d282a789853ebc29a680465eb25e89/other/git/branches/official#L1>.
 
 -   `deleted` file: a headerless CSV with 2 fields:
     `unix_epoch,branch_name` where `unix_epoch` is the unix epoch of the
@@ -52,6 +58,9 @@ is where **git_delete_stale_branches** steps in.
         1675099986,t_192_a_local
         1651164877,dev_grammar_vim_grammarous
         1648935017,dev_find_out_why_makeprg_is_stalling_improved_01
+
+    Example in Github:
+    <https://github.com/fmv1992/git_delete_stale_branches/blob/8b077a6370d282a789853ebc29a680465eb25e89/other/git/branches/deleted#L1>.
 
 #### Recommended usage
 
@@ -76,6 +85,14 @@ will occur.
 
 
 `-------------------------------------------------- ✂`
+
+## Releasing
+
+```
+cdp git_delete_stale_branches
+rm ./output/deb/*.deb
+make down build test release
+```
 
 <!--
 
