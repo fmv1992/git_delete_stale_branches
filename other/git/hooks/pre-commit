@@ -1,0 +1,15 @@
+#! /usr/bin/env bash
+
+# Halt on error.
+set -euxo pipefail
+
+# Go to execution directory.
+{ cd "$(dirname $(readlink -f "${0}"))" && git rev-parse --is-inside-work-tree > /dev/null 2>&1 && cd "$(git rev-parse --show-toplevel 2> /dev/null)"; } || cd "$(dirname "$(readlink -f "${0}")")"
+# Close identation: }
+cd ../../
+test -d ./.git
+
+rm ./output/deb/*.deb
+make package down build test
+
+# vim: set filetype=sh fileformat=unix nowrap:

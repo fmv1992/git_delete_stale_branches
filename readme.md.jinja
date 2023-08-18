@@ -1,0 +1,68 @@
+{{ disclaimer }}
+# `git_delete_stale_branches`
+
+A bash library to parse CLI arguments from a [recfile][recutils_website].
+
+## Man page
+
+`✂ --------------------------------------------------`
+
+{% include 'docs/manpage.md.clean' %}
+
+`-------------------------------------------------- ✂`
+
+<!--
+
+## Developing
+
+???
+
+-->
+
+### Testing
+
+```
+cd /path/to/git_delete_stale_branches
+rm ./output/deb/*.deb
+make package down build test
+```
+
+## TODO
+
+### This project
+
+*   (empty).
+
+### Related to this project
+
+*   Use `recfiles` to define dependencies. Its metadata capabilities are outstanding.
+
+*   [DRY principle](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself): install jira templates from rec files, define parameters from recfiles, etc. e.g. `if [[ $# != 3 ]]; then` the `3` is hardcoded there.
+
+    *   duplication of knowlegde; if I parse exactly 3 arguments, how can I fix that and reference that number on the docs without templating the bash file?
+
+## Other
+
+These were helpful when deciding on the project structure:
+
+https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard
+
+https://stackoverflow.com/questions/45740459/what-does-local-mean
+
+https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch04s09.html#usrlocalshare1
+
+### Related projects
+
+*   [`fmv1992_cookiecutter_shell`](https://github.com/fmv1992/fmv1992_cookiecutter_shell): this repos uses `fmv1992_cookiecutter_shell`.
+
+*   [`shell_argument_parsing_file`](https://github.com/fmv1992/shell_argument_parsing_file): this repos uses `shell_argument_parsing_file`.
+
+<!--  -->
+
+<!-- https://pandoc.org/chunkedhtml-demo/8.16-links-1.html -->
+
+[recutils_website]: https://www.gnu.org/software/recutils/ (GNU Recutils)
+
+<!-- # vim: set filetype=pandoc fileformat=unix nowrap spell spelllang=en: -->
+
+{{ disclaimer }}

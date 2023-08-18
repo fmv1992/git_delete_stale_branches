@@ -1,0 +1,15 @@
+#! /usr/bin/env bash
+#
+# Parse CLI arguments defined in a recfile and put them in an associative
+# array.
+
+# Halt on error.
+set -euo pipefail
+
+function is_docker() {
+    local cgroup=/proc/1/cgroup
+    test -f "$cgroup"
+    grep -E ':cpuset:/docker' -- "$cgroup" > /dev/null 2>&1
+}
+
+# vim: set filetype=sh fileformat=unix nowrap:

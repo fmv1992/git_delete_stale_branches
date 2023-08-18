@@ -1,0 +1,57 @@
+# -*- mode: rec -*-
+#
+# vim: set filetype=rec fileformat=unix nowrap spell spelllang=en:
+#
+# Rec documentation: `doc recutils` or <https://www.gnu.org/software/recutils/manual/>.
+
+%rec: ShellArgumentParsingFile
+%mandatory: name longform shortform description get_n_arguments
+%unique: name longform shortform
+%sort: name
+%key: name
+%allowed: name longform shortform description get_n_arguments
+#
+# * `description` should provide reasons for installing the package.
+#
+%type: name line
+%type: get_n_arguments int
+%type: longform line
+%type: shortform line
+%type: command_check_is_installed line
+%typedef: Chat_t size 1
+#
+
+name: config-directory
+longform: config-directory
+shortform: c
+description: 
++ The config directory containing the `deleted` and the `official` files.
+get_n_arguments: 1
+
+name: delete
+longform: delete
+shortform: d
+description: 
++ The flag that specifies that a deletion will take place.
+get_n_arguments: 0
+
+name: git-directory
+longform: git-directory
+shortform: g
+description: 
++ The git directory that will have its branch deleted.
+get_n_arguments: 1
+
+name: help
+longform: help
+shortform: h
+description: 
++ Print help and exit.
+get_n_arguments: 0
+
+name: verbose
+longform: verbose
+shortform: v
+description: 
++ Add verbosity.
+get_n_arguments: 0

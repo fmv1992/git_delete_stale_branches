@@ -1,0 +1,22 @@
+version: '3.3'
+services:
+  git_delete_stale_branches_test:
+        build:
+            args:
+                - USER_UID
+                - USER_GID
+                - PROJECT
+                - GIT_COMMIT
+                - GIT_COMMIT_DATE
+                - BUILD_DATE
+            context: .
+        stdin_open: true # docker run -i
+        entrypoint: ''
+        tty: true # docker run -t
+#       volumes:
+#           - type: bind
+#             source: ${ROOT_DIR}/output/deb/
+#             target: /opt/deb
+#             read_only: false
+
+# vim: set filetype=yaml fileformat=unix nowrap spell spelllang=en,cdenglish01:

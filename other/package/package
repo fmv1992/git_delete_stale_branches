@@ -1,0 +1,54 @@
+#! /usr/bin/env bash
+
+# Halt on error.
+set -euxo pipefail
+
+# Go to execution directory.
+{ cd "$(dirname $(readlink -f "${0}"))" && git rev-parse --is-inside-work-tree > /dev/null 2>&1 && cd "$(git rev-parse --show-toplevel)"; } || cd "$(dirname "$(readlink -f "${0}")")"
+# Close identation: }
+
+[[ $(whoami) != root ]]
+
+curdir=$(pwd)
+
+unset ROOT_DIR
+unset REFERENCE_DIR
+export IS_PACKAGING=true
+
+cd $(mktemp --directory --tmpdir=/tmp/ tmp.git_delete_stale_branches.$(date '+%s').XXXXXX)
+cp -rf "${curdir}" .
+cd ./git_delete_stale_branches
+
+# make clean
+
+[[ $(find ./output/deb/ -iname '*.deb' | wc -l) == 0 ]]
+
+metadata_file=./git_delete_stale_branches/usr/local/share/git_delete_stale_branches/recfiles/git_delete_stale_branches_metadata.rec
+
+recsel --collapse --type 'Description' --print-values 'description' -- $metadata_file \
+    | sed -e :a -e '/[^[:blank:]]/,$!d; /^[[:space:]]*$/{ $d; N; ba' -e '}' > description-pak
+
+mkdir doc-pak
+mkdir -p ./git_delete_stale_branches/usr/share/man/man1/
+pandoc2 --standalone --from markdown+definition_lists --to man -- ./docs/manpage.md > ./git_delete_stale_branches/usr/share/man/man1/git_delete_stale_branches.1
+
+version="$(recsel --collapse --type 'Version' --print-values 'version' -- $metadata_file | sort --version-sort | tail -n 1)"
+dependencies_os="$(recsel --collapse --type 'Dependencies' --expression "dependency_level = 'operating_system_package' && stage = 'use'" --print-values 'name' -- $metadata_file | LC_COLLATE=C sort --version-sort | paste --serial --delimiters ',')"
+
+yes '' | checkinstall \
+    -d2 \
+    --install=no \
+    --fstrans=yes \
+    --gzman=yes \
+    --type=debian \
+    --requires="$dependencies_os" \
+    --pakdir=./output/deb \
+    --pkgversion="${version}" \
+    --pkgname='git_delete_stale_branches' \
+    --maintainer='fmv1992@gmail.com' || true
+
+[[ $(find ./output/deb/ -iname '*.deb' | wc -l) == 1 ]]
+
+find $(pwd) -iname '*.deb' | tee /dev/stderr | xargs -- cp -t "${curdir}"/output/deb
+
+# vim: set filetype=sh fileformat=unix nowrap:

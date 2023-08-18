@@ -1,0 +1,156 @@
+#! /usr/bin/env bash
+
+# Halt on error.
+set -euo pipefail
+
+REFERENCE_DIR="${REFERENCE_DIR:-}"
+source "${REFERENCE_DIR}"/usr/local/lib/git_delete_stale_branches/git_delete_stale_branches
+source /usr/local/lib/shell_argument_parsing_file/shell_argument_parsing_file
+
+REC_ENTRYPOINT=${REFERENCE_DIR}/usr/local/share/git_delete_stale_branches/recfiles/git_delete_stale_branches_entrypoint.rec
+
+declare -A arguments
+
+parse "${REC_ENTRYPOINT}" arguments "${*:-}"
+
+# Ensure `--delete` is passed.
+if [[ ${arguments[delete]:-SENTINEL} != 'true' ]]; then
+    echo 'The `--delete` flag must be passed.' > /dev/stderr
+    exit 1
+fi
+
+# declare -A empty_array
+# empty_array[rest_n]=0
+# empty_array[test]=true
+
+# _print_array arguments
+
+# Ensure no arguments are passed on the first version.
+# _associative_arrays_are_equal empty_array arguments
+
+# ✂ --------------------------------------------------
+validate_other_git_branches_deleted_file() {
+    validated="$(grep -E '^[0-9]+,.*$' -- "${1}")"
+    if diff <(printf "%s\n" "${validated}") "${1}"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+expected_number_of_arguments=5
+
+if [[ $# != ${expected_number_of_arguments} ]]; then
+    echo "Illegal number of parameters ($#): '$*'. Expected ${expected_number_of_arguments}." > /dev/stderr
+    echo "See '$(readlink -f "${0}")' for a full documentation." > /dev/stderr
+    exit 1
+fi
+
+# Unquote the argument.
+git_directory="$(echo "${arguments['git-directory']}" | xargs echo)"
+if { ! [[ -d ${git_directory} ]]; } || { ! git -C "${git_directory}" rev-parse --git-dir > /dev/null 2>&1; }; then
+    echo "The first argument should be a git directory (was '${git_directory}')." > /dev/stderr
+    exit 1
+fi
+
+# Unquote the argument.
+config_directory="$(echo "${arguments['config-directory']}" | xargs echo)"
+if ! [[ -d ${config_directory} ]]; then
+    echo "The second argument should be a git directory (was '${config_directory}')." > /dev/stderr
+    exit 1
+fi
+
+# Ensure there's no stray arguments.
+rest_arguments_n=${arguments[rest_n]}
+if [[ ${rest_arguments_n} != 0 ]]; then
+    echo "There are stray arguments ('${rest_arguments_n}' of them)." > /dev/stderr
+    exit 1
+fi
+
+delete_file="$(readlink -f "${config_directory}/deleted")"
+if [[ ! -f ${delete_file} ]]; then
+    echo "The second argument must have a \`deleted\` file (i.e. '${delete_file}')." > /dev/stderr
+    exit 1
+fi
+
+official_file="$(basename "$(readlink -f "${config_directory}/official")")"
+
+validate_other_git_branches_deleted_file "${delete_file}"
+
+# Go to execution directory.
+cd "${git_directory}"
+git rev-parse --git-dir 2> /dev/null
+
+while IFS=, read -r date_ branch_; do
+    bash -s -- "${date_}" "${branch_}" ${official_file} << 'EOF'
+#! /usr/bin/env bash
+
+# Halt on error.
+set -euxo pipefail
+
+official_branch="$(cat other/git/branches/official)"
+[[ -n ${official_branch} ]]
+[[ $(wc -l <<< ${official_branch}) -eq 1 ]]
+
+[[ ${official_branch} != ${2} ]]
+
+# If the last commit time of this branch comes before the deletion timestamp we
+# are ok to delete it.
+set +o pipefail
+last_commit_of_branch="$(git log --format='%at' "${2}" | head -n 1)"
+set -o pipefail
+# If `last_commit_of_branch` is empty assume remote `origin`.
+#
+# ???: This is a shortcut
+#
+if [[ -z $last_commit_of_branch ]]; then
+    set +o pipefail
+    last_commit_of_branch="$(git log --format='%at' "origin/${2}" | head -n 1)"
+    set -o pipefail
+fi
+re='^[0-9]+$'
+if ! [[ $last_commit_of_branch =~ $re ]]; then
+    # ???: should we make these cases distinct? (i.e. "not being a number" and
+    # "already being deleted".
+    echo "error: '${last_commit_of_branch}' not a number or already deleted." >&2
+    exit 0
+fi
+if [[ ${last_commit_of_branch} > ${1} ]]; then
+    echo "error: '${last_commit_of_branch}' comes after the saved timestamp ('${2}')." >&2
+    exit 0
+fi
+
+git branch --all \
+    | sed -E 's/.* //g' \
+    | sed -E 's#.*/##g' \
+    | grep --fixed-strings --line-regexp --regexp "${2}" \
+    || exit 0
+
+git branch --force --delete "${2}" || true
+git push --force --delete origin "${2}" || true
+EOF
+done < "${delete_file}"
+
+# vim: set filetype=sh fileformat=unix nowrap:
+# -------------------------------------------------- ✂
+
+# if [[ ${arguments[help]:-false} == 'true' ]]; then
+#     git_delete_stale_branches_help
+#     exit 0
+# fi
+#
+# if [[ ${arguments[verbose]:-false} == 'true' ]]; then
+#     bash ${REFERENCE_DIR}/usr/local/share/git_delete_stale_branches/tests/test_01.sh --test
+#     set -x
+# fi
+#
+# if [[ ${arguments[test]:-SENTINEL} != 'SENTINEL' ]]; then
+#     bash ${REFERENCE_DIR}/usr/local/share/git_delete_stale_branches/tests/test_01.sh --test
+# else
+#     echo "Unrecognized entrypoint: \`$@\`." > /dev/stderr
+#     exit 1
+# fi
+#
+# echo "Tests are done." > /dev/stderr
+
+# vim: set filetype=sh fileformat=unix nowrap:

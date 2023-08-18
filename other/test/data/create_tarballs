@@ -1,0 +1,60 @@
+#! /usr/bin/env bash
+
+# Halt on error.
+set -euxo pipefail
+
+# Go to execution directory.
+{ cd "$(dirname $(readlink -f "${0}"))" && git rev-parse --is-inside-work-tree > /dev/null 2>&1 && cd "$(git rev-parse --show-toplevel)"; } || cd "$(dirname "$(readlink -f "${0}")")"
+# Close identation: }
+test -d ./.git
+
+# ! is_docker
+
+curdir=$(pwd)
+
+tmpdir=$(mktemp --directory --tmpdir=/tmp/ tmp.git_delete_stale_branches.$(basename "$0").$(date '+%s').XXXXXX)
+cd "${tmpdir}"
+
+dir01=${tmpdir}/${PROJECT}_fake_git_repos_01
+mkdir "${dir01}"
+cd "${dir01}"
+
+# Start a git repo.
+git init -- .
+git checkout -b main
+git commit --allow-empty -m "first (empty) commit"
+
+# Create skeleton files.
+mkdir -p other/git/branches/
+touch other/git/branches/{deleted,official}
+git add --force -- .
+git commit -m 'added skeleton files'
+
+# Create a `branch01` branch.
+git checkout -b branch01
+echo 'busy work branch01' > busy_work01.txt
+git add --force -- .
+git commit -m 'added busy work 01'
+
+# Create a `branch02` branch.
+git checkout -b branch02
+echo 'busy work branch02' > busy_work02.txt
+git add --force -- .
+git commit -m 'added busy work 02'
+
+# Reverse to `main` branch.
+git checkout main
+echo 'busy work main' > busy_work_main.txt
+# Put the time into the future. We can always delete commits that are older
+# than now (`9999999999`), but never commits that were made into the future.
+# This prevents accidental deletion of branches.
+cat << 'EOF' > other/git/branches/deleted
+9999999999,branch01
+EOF
+git add --force -- .
+echo 'main' > other/git/branches/official
+git commit -m 'added busy work main'
+
+tar --verbose --create --file "${curdir}"/other/test/data/fake_repos_01.tar --directory "${tmpdir}" -- .
+
+# vim: set filetype=sh fileformat=unix nowrap:

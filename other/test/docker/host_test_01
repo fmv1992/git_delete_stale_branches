@@ -1,0 +1,95 @@
+#! /usr/bin/env bash
+
+# Halt on error.
+set -euo pipefail
+
+function create_bogus_branch() {
+    git checkout -b $1
+    echo 'busy work $1' > busy_$(uuidgen | sed -E 's/-//g').txt
+    git add --force -- .
+    git commit -m "added busy work $1"
+}
+
+# Go to execution directory.
+{ cd "$(dirname $(readlink -f "${0}"))" && git rev-parse --is-inside-work-tree > /dev/null 2>&1 && cd "$(git rev-parse --show-toplevel)"; } || cd "$(dirname "$(readlink -f ${0})")"
+# Close identation: }
+curdir=$(pwd)
+
+# Go to a temporary directory.
+tmpdir=$(mktemp --directory --tmpdir=/tmp/ tmp.$(basename $0).${PROJECT}.$(date '+%s').XXXXXX)
+cd ${tmpdir}
+
+test_branch_01='_bogus_01_'
+test_branch_02='_bogus_02-'
+test_branch_03='normal_name'
+
+# Start from a ground state: there's only a `main` branch and a `dev` branch.
+git clone --recurse-submodules -j8 -- https://github.com/fmv1992/private_repos_for_testing
+cd ./private_repos_for_testing
+for onebranch in ${test_branch_01} ${test_branch_02} ${test_branch_03}; do
+    git branch --delete --force ${onebranch} || true
+    git push --force --delete origin ${onebranch} || true
+done
+git checkout main
+git init . && git comm --allow-empty -m "first (empty) commit"
+
+# Create a bunch of bogus branches.
+create_bogus_branch ${test_branch_01}
+git checkout main
+create_bogus_branch ${test_branch_02}
+create_bogus_branch ${test_branch_03}
+
+# Create the project structure.
+mkdir -p other/git/branches/
+touch other/git/branches/{deleted,official}
+echo 'main' > other/git/branches/official
+echo "$(date '+%s'),${test_branch_01}" > other/git/branches/deleted
+git add --force -- other/git/branches/
+git commit -m "added project structure: deleted and official files"
+
+for onebranch in ${test_branch_01} ${test_branch_02} ${test_branch_03}; do
+    git checkout ${onebranch}
+    git push --force --set-upstream origin ${onebranch}
+done
+
+# Delete some bogus branches.
+git_directory=$(pwd)
+[[ ${git_directory} =~ ^/tmp/ ]]
+[[ -n $(find ${git_directory} -iname 'busy_*.txt') ]]
+# Ensure we have `test_branch_01`.
+git branch -a | grep -E ${test_branch_01}
+# Ensure we are taking all branches into account.
+[[ $(git branch -a) == $(git branch -a | grep -E 'main|_bogus_01_|_bogus_02-|normal_name') ]]
+# Delete the stale branches.
+bash ${curdir}/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory ${git_directory} --config-directory ${git_directory}/other/git/branches
+# Test that the stale branches were deleted.
+#
+# Ensure only the specified branches were deleted.
+[[ $(git branch -a) == $(git branch -a | grep -E 'main|_bogus_02-|normal_name') ]]
+! git branch -a | grep -E ${test_branch_01}
+
+# Try to delete the `main` branch.
+echo "$(date '+%s'),main" >> other/git/branches/deleted
+! bash ${curdir}/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory ${git_directory} --config-directory ${git_directory}/other/git/branches
+grep --invert-match --fixed-strings -- 'main' other/git/branches/deleted | sponge other/git/branches/deleted
+
+# Test that we cannot delete a branch after a commit time.
+echo "$(date --date 'today - 7 days' '+%s'),${test_branch_02}" >> other/git/branches/deleted
+! bash ${curdir}/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory ${git_directory} --config-directory ${git_directory}/other/git/branches
+[[ $(git branch -a) == $(git branch -a | grep -E 'main|_bogus_02-|normal_name') ]]
+# But then, if we commit we can delete it.
+grep --invert-match --fixed-strings -- ${test_branch_02} other/git/branches/deleted | sponge other/git/branches/deleted
+touch test_${test_branch_02}.txt
+git add --force .
+git commit -m "added new work"
+echo "$(date --date 'today + 7 days' '+%s'),${test_branch_02}" >> other/git/branches/deleted
+bash ${curdir}/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory ${git_directory} --config-directory ${git_directory}/other/git/branches
+[[ $(git branch -a) == $(git branch -a | grep -E 'main|normal_name') ]]
+
+# Clean up.
+for onebranch in ${test_branch_01} ${test_branch_02} ${test_branch_03}; do
+    git branch --delete --force ${onebranch} || true
+    git push --force --delete origin ${onebranch} || true
+done
+
+# vim: set filetype=sh fileformat=unix nowrap:
