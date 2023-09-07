@@ -86,6 +86,8 @@ This flag is spurious but ensures that the user is aware that deletions will occ
 
 ## TODO
 
+- Allow for deletion of remotes other than `origin`.
+
 - Add packages definition. Ideally with a project that checks all the dependencies.
 
 - Depends on [shell_argument_parsing_file](https://github.com/fmv1992/shell_argument_parsing_file "shell_argument_parsing_file"): add a `--help` and `--verbose` flags.
