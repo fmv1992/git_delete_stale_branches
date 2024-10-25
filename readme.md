@@ -86,6 +86,10 @@ This flag is spurious but ensures that the user is aware that deletions will occ
 
 ## TODO
 
+- `$HOME/backups/2024_08_23_17h_52m_56s_felipev_licitacoes_felipe_lucas_bugfix.tar.gz`:
+
+  `git log --format=%at origin/nojira_2_get_more_data_local` → `git log --format=%at -- origin/nojira_2_get_more_data_local`
+
 - Allow for deletion of remotes other than `origin`.
 
 - Add packages definition. Ideally with a project that checks all the dependencies.
