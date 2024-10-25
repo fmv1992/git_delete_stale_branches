@@ -1,22 +1,20 @@
-version: '3.3'
 services:
-  git_delete_stale_branches:
+    git_delete_stale_branches:
         build:
             args:
-                - USER_UID
-                - USER_GID
-                - PROJECT
+                - BUILD_DATE
                 - GIT_COMMIT
                 - GIT_COMMIT_DATE
-                - BUILD_DATE
+                - PROJECT
+                - USER_GID
+                - USER_UID
             context: .
-        stdin_open: true # docker run -i
         entrypoint: ''
-        tty: true # docker run -t
+        stdin_open: true
+        tty: true
         volumes:
-            - type: bind
-              source: ${ROOT_DIR}/other
-              target: /home/ubuntu_user/git_delete_stale_branches/other
-              read_only: false
-
-# vim: set filetype=yaml fileformat=unix nowrap spell spelllang=en,cdenglish01:
+            -   read_only: false
+                source: ${ROOT_DIR}/other
+                target: /home/ubuntu_user/git_delete_stale_branches/other
+                type: bind
+version: '3.3'
