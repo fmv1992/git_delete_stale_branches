@@ -29,7 +29,7 @@ fi
 # _associative_arrays_are_equal empty_array arguments
 
 # ✂ --------------------------------------------------
-validate_other_git_branches_deleted_file() {
+function validate_other_git_branches_deleted_file() {
     validated="$(grep -E '^[0-9]+,.*$' -- "${1}")"
     if diff <(printf "%s\n" "${validated}") "${1}"; then
         return 0
@@ -82,7 +82,9 @@ cd "${git_directory}"
 git rev-parse --git-dir 2> /dev/null
 
 while IFS=, read -r date_ branch_; do
-    bash -s -- "${date_}" "${branch_}" ${official_file} << 'EOF'
+    # Send all output to stderr.
+    {
+        bash -s -- "${date_}" "${branch_}" ${official_file} << 'EOF'
 #! /usr/bin/env bash
 
 # Halt on error.
@@ -131,6 +133,8 @@ git branch --all \
 git branch --force --delete "${2}" || true
 git push --force --delete origin "${2}" || true
 EOF
+    } >&2
+    echo "Deleted the branch: «${branch_}»."
 done < "${delete_file}"
 
 # vim: set filetype=sh fileformat=unix nowrap:
