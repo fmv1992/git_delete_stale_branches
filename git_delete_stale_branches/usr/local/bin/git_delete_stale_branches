@@ -86,29 +86,28 @@ while IFS=, read -r date_ branch_; do
 #! /usr/bin/env bash
 
 # Halt on error.
-set -euxo pipefail
+set -euo pipefail
 
 official_file="${3}"
-delete_file="$(basename "${official_file}")/deleted"
+delete_file="$(dirname "${official_file}")/deleted"
 
-official_branch="$(cat ${official_file})"
+official_branch="$(cat "${official_file}")"
 [[ -n ${official_branch} ]]
-[[ $(wc -l <<< ${official_branch}) -eq 1 ]]
+[[ $(wc -l <<< "${official_branch}") -eq 1 ]]
 
 [[ ${official_branch} != ${2} ]]
 
 # If the last commit time of this branch comes before the deletion timestamp we
 # are ok to delete it.
 set +o pipefail
-last_commit_of_branch="$(git log --format='%at' "${2}" | head -n 1)"
+last_commit_of_branch="$(git log --format='%at' "${2}" -- | head -n 1)"
 set -o pipefail
 # If `last_commit_of_branch` is empty assume remote `origin`.
 #
 # ???: This is a shortcut
-#
 if [[ -z $last_commit_of_branch ]]; then
     set +o pipefail
-    last_commit_of_branch="$(git log --format='%at' "origin/${2}" | head -n 1)"
+    last_commit_of_branch="$(git log --format='%at' "origin/${2}" -- | head -n 1)"
     set -o pipefail
 fi
 re='^[0-9]+$'
