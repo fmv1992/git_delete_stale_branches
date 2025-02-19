@@ -75,6 +75,11 @@ fi
 
 official_file="$(readlink -f "${config_directory}/official")"
 
+if [[ ! -f ${official_file} ]]; then
+    echo "Official branch file «${official_file}» not found." > /dev/stderr
+    exit 1
+fi
+
 validate_other_git_branches_deleted_file "${delete_file}"
 
 # Go to execution directory.
@@ -82,8 +87,7 @@ cd "${git_directory}"
 git rev-parse --git-dir 2> /dev/null
 
 while IFS=, read -r date_ branch_; do
-    bash -s -- "${date_}" "${branch_}" "${official_file}" << 'EOF'
-EOF
+    /usr/local/libexec/git_delete_stale_branch "${date_}" "${branch_}" "${official_file}"
 done < "${delete_file}"
 
 # vim: set filetype=sh fileformat=unix nowrap:

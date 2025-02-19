@@ -6,6 +6,11 @@ set -euo pipefail
 official_file="${3}"
 delete_file="$(dirname "${official_file}")/deleted"
 
+if [[ ! -f ${delete_file} ]]; then
+    echo "Deleted branch file «${delete_file}» not found." > /dev/stderr
+    exit 1
+fi
+
 official_branch="$(cat "${official_file}")"
 [[ -n ${official_branch} ]]
 [[ $(wc -l <<< "${official_branch}") -eq 1 ]]
