@@ -9,7 +9,7 @@ Main use case:
 
 *   I work alternating development on both computers.
 
-*   Once merged, one (or both) of the computers end up with stale, unused branches from that development.
+*   Once merged, one (or both) of the computers end up with stale, unused branches from that development (e.g. `feat1_a`, `feat1_b`, etc).
 
     `git_delete_stale_branches` allows one to safely remove these branches by comparing timestamps. If there's a commit that comes after the insertion timestamp, that branch does not get deleted. If the last commit precedes the timestamp, the branch gets deleted.
 
