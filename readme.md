@@ -86,6 +86,10 @@ This flag is spurious but ensures that the user is aware that deletions will occ
 
 ## TODO
 
+- Add a 3-field CSV version.
+
+- Support a 2-field CSV version and 3 field one.
+
 - Add a concrete usage for copy pasting…
 
 - Remove the cluttering verbosity that prevents understanding of what is being done.
