@@ -96,25 +96,3 @@ while IFS=, read -r date_ branch_; do
 done < "${delete_file}"
 
 # vim: set filetype=sh fileformat=unix nowrap:
-# -------------------------------------------------- ✂
-
-# if [[ ${arguments[help]:-false} == 'true' ]]; then
-#     git_delete_stale_branches_help
-#     exit 0
-# fi
-#
-# if [[ ${arguments[verbose]:-false} == 'true' ]]; then
-#     bash ${REFERENCE_DIR}/usr/local/share/git_delete_stale_branches/tests/test_01.sh --test
-#     set -x
-# fi
-#
-# if [[ ${arguments[test]:-SENTINEL} != 'SENTINEL' ]]; then
-#     bash ${REFERENCE_DIR}/usr/local/share/git_delete_stale_branches/tests/test_01.sh --test
-# else
-#     echo "Unrecognized entrypoint: \`$@\`." > /dev/stderr
-#     exit 1
-# fi
-#
-# echo "Tests are done." > /dev/stderr
-
-# vim: set filetype=sh fileformat=unix nowrap:
