@@ -82,54 +82,7 @@ cd "${git_directory}"
 git rev-parse --git-dir 2> /dev/null
 
 while IFS=, read -r date_ branch_; do
-    bash -s -- "${date_}" "${branch_}" ${official_file} << 'EOF'
-#! /usr/bin/env bash
-
-# Halt on error.
-set -euo pipefail
-
-official_file="${3}"
-delete_file="$(dirname "${official_file}")/deleted"
-
-official_branch="$(cat "${official_file}")"
-[[ -n ${official_branch} ]]
-[[ $(wc -l <<< "${official_branch}") -eq 1 ]]
-
-[[ ${official_branch} != ${2} ]]
-
-# If the last commit time of this branch comes before the deletion timestamp we
-# are ok to delete it.
-set +o pipefail
-last_commit_of_branch="$(git log --format='%at' "${2}" -- | head -n 1)"
-set -o pipefail
-# If `last_commit_of_branch` is empty assume remote `origin`.
-#
-# ???: This is a shortcut
-if [[ -z $last_commit_of_branch ]]; then
-    set +o pipefail
-    last_commit_of_branch="$(git log --format='%at' "origin/${2}" -- | head -n 1)"
-    set -o pipefail
-fi
-re='^[0-9]+$'
-if ! [[ $last_commit_of_branch =~ $re ]]; then
-    # ???: should we make these cases distinct? (i.e. "not being a number" and
-    # "already being deleted".
-    echo "error: '${last_commit_of_branch}' not a number or already deleted." >&2
-    exit 0
-fi
-if [[ ${last_commit_of_branch} > ${1} ]]; then
-    echo "error: '${last_commit_of_branch}' comes after the saved timestamp ('${2}')." >&2
-    exit 0
-fi
-
-git branch --all \
-    | sed -E 's/.* //g' \
-    | sed -E 's#.*/##g' \
-    | grep --fixed-strings --line-regexp --regexp "${2}" \
-    || exit 0
-
-git branch --force --delete "${2}" || true
-git push --force --delete origin "${2}" || true
+    bash -s -- "${date_}" "${branch_}" "${official_file}" << 'EOF'
 EOF
 done < "${delete_file}"
 
