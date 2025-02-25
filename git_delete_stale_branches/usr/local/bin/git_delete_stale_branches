@@ -91,6 +91,12 @@ else
     exit 1
 fi
 
+# ???: support CSV headers.
+
+# ???: support a 2 field CSV.
+
+# ???: support a 3 field CSV.
+
 while IFS=, read -r date_ branch_; do
     "${REFERENCE_DIR}/usr/local/libexec/git_delete_stale_branch" "${date_}" "${branch_}" "${official_file}"
 done < "${delete_file}"
