@@ -17,8 +17,8 @@ function validate_number_of_arguments() {
     _validate_number_of_arguments ${@} 2
     local expected_number_of_arguments="${1}"
     local error_message="${2}"
-    if ((n_args_received != n_args_expected)); then
-        echo "Expected ${n_args_expected} arguments, but got ${n_args_received}." 2>&1
+    if _validate_number_of_arguments ${@} "${expected_number_of_arguments}"; then
+        echo "${error_message}" 2>&1
         return 1
     fi
 }
@@ -28,14 +28,10 @@ function _validate_number_of_arguments() {
     local n_args_received=$(($# - 1))
     # Get the last argument
     local n_args_expected="${!#}"
-    # Store all but the last argument in an array
-    local -a all_but_n_args_expected=("${@:1:n_args_received}")
 
     if ((n_args_received != n_args_expected)); then
-        echo "Expected ${n_args_expected} arguments, but got ${n_args_received}." 2>&1
         return 1
     fi
 }
-
 
 # vim: set filetype=sh fileformat=unix nowrap:
