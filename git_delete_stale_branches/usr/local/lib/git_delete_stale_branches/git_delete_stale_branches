@@ -17,6 +17,10 @@ function _csv_three_header() {
     printf 'timestamp_delete_if_commit_is_older,branch,timestamp_delete_after'
 }
 
+# ???: --- ⟨⟨⟨
+#
+# Make it a single function in gawk.
+
 function _csv_n_distinct_fields() {
     validate_number_of_arguments 1 $@
     local csv_file="${1}"
@@ -107,5 +111,7 @@ function validate_number_of_arguments() {
         return 1
     fi
 }
+
+# --- ⟩⟩⟩
 
 # vim: set filetype=sh fileformat=unix nowrap:
