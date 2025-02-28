@@ -91,6 +91,23 @@ else
     exit 1
 fi
 
+# As of `v0.1.x` we are supporting a 3 column CSV.
+#
+# * CSV "schema" for the original 2 field use case:
+#
+#   ```
+#   timestamp_delete_if_commit_is_older,branch
+#   1739817094,nojira_81
+#   ```
+#
+# * CSV "schema" for the original 3 field use case:
+#
+#   ```
+#   timestamp_delete_if_commit_is_older,branch,timestamp_delete_after
+#   1739817094,nojira_81,1741366313
+#   ```
+n_csv_fields=''
+csv_version=2
 # ???: support CSV headers.
 
 # ???: support a 2 field CSV.

@@ -3,13 +3,39 @@
 # Parse CLI arguments defined in a recfile and put them in an associative
 # array.
 
-# Halt on error.
-set -euo pipefail
-
 function is_docker() {
     local cgroup=/proc/1/cgroup
     test -f "$cgroup"
     grep -E ':cpuset:/docker' -- "$cgroup" > /dev/null 2>&1
+}
+
+function is_valid_simple_csv() {
+    local is_valid=true
+}
+
+
+function validate_number_of_arguments() {
+    _validate_number_of_arguments ${@} 2
+    local expected_number_of_arguments="${1}"
+    local error_message="${2}"
+}
+
+function _validate_number_of_arguments() {
+    # Grab all but the last argument.
+    local last_argument="${@: -1}"
+    local all_but_last_argument="${@: 1: -1}"
+    local n_arguments="${#all_but_last_argument[@]}"
+
+    echo "-------------------------------------------------------------------------------"
+    echo "${last_argument}"
+    echo "${all_but_last_argument}"
+    echo "${n_arguments}"
+    echo "-------------------------------------------------------------------------------"
+
+    if (($# != 2)); then
+        echo "Expected 2 arguments. Got $#." > /dev/stderr
+        exit 1
+    fi
 }
 
 # vim: set filetype=sh fileformat=unix nowrap:
