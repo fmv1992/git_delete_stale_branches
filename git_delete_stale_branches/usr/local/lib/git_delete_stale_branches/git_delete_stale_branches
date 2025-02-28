@@ -35,12 +35,9 @@ function _validate_number_of_arguments() {
 
     if ((n_args_received != n_args_expected)); then
         echo "Expected ${n_args_expected} arguments, but got ${n_args_received}." 2>&1
-        exit 1
+        return 1
     fi
 }
 
-_validate_number_of_arguments one two three 3
-_validate_number_of_arguments one two three 2
-_validate_number_of_arguments one two three 4
 
 # vim: set filetype=sh fileformat=unix nowrap:
