@@ -37,7 +37,14 @@ BEGIN { fields = 0; first = 1; exit_now = 0 }
 }
 END {
     # `END` executes even after `exit 1`.
-    if (exit_now == 0) print fields
+{
+    if (exit_now == 0) {
+        print fields
+    } else {
+        print "mixed"
+    }
+}
+
 }
     ' "${csv_file}"
 }
@@ -47,7 +54,7 @@ function is_valid_simple_csv() {
     local csv_file="${1}"
 
     # Get number of fields consistently used in the file
-    local n_fields=$(_csv_n_distinct_fields "${csv_file}")
+    local n_fields="$(_csv_n_distinct_fields "${csv_file}")"
 
     # If we got "mixed", the file has inconsistent number of fields
     if [[ ${n_fields} == "mixed" ]]; then

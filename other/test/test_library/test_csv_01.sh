@@ -22,7 +22,7 @@ csv_invalid_02="./other/test/test_library/csv_invalid_02.csv"
 
 # Should return 2 for valid 2-field CSV.
 ! _csv_n_distinct_fields "${csv_invalid_01}"
-[[ "$(_csv_n_distinct_fields "${csv_invalid_01}")" == '' ]]
+[[ "$(_csv_n_distinct_fields "${csv_invalid_01}")" == 'mixed' ]]
 
 [[ "$(_csv_n_distinct_fields "${csv_invalid_02}")" == '3' ]]
 
