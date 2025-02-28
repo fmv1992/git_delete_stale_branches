@@ -27,12 +27,6 @@ function _validate_number_of_arguments() {
     # Store all but the last argument in an array
     local -a all_but_n_args_expected=("${@:1:n_args_received}")
 
-    echo "-------------------------------------------------------------------------------"
-    echo "Last argument: ${n_args_expected}"
-    echo "All but last: ${all_but_n_args_expected[@]}"
-    echo "Number of arguments: $n_args_received"
-    echo "-------------------------------------------------------------------------------"
-
     if ((n_args_received != n_args_expected)); then
         echo "Expected ${n_args_expected} arguments, but got ${n_args_received}." 2>&1
         return 1
