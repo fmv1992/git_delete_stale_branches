@@ -13,7 +13,6 @@ function is_valid_simple_csv() {
     local is_valid=true
 }
 
-
 function validate_number_of_arguments() {
     _validate_number_of_arguments ${@} 2
     local expected_number_of_arguments="${1}"
@@ -21,21 +20,27 @@ function validate_number_of_arguments() {
 }
 
 function _validate_number_of_arguments() {
-    # Grab all but the last argument.
-    local last_argument="${@: -1}"
-    local all_but_last_argument="${@: 1: -1}"
-    local n_arguments="${#all_but_last_argument[@]}"
+    # Get the number of arguments excluding the last one
+    local n_args_received=$(($# - 1))
+    # Get the last argument
+    local n_args_expected="${!#}"
+    # Store all but the last argument in an array
+    local -a all_but_n_args_expected=("${@:1:n_args_received}")
 
     echo "-------------------------------------------------------------------------------"
-    echo "${last_argument}"
-    echo "${all_but_last_argument}"
-    echo "${n_arguments}"
+    echo "Last argument: ${n_args_expected}"
+    echo "All but last: ${all_but_n_args_expected[@]}"
+    echo "Number of arguments: $n_args_received"
     echo "-------------------------------------------------------------------------------"
 
-    if (($# != 2)); then
-        echo "Expected 2 arguments. Got $#." > /dev/stderr
+    if ((n_args_received != n_args_expected)); then
+        echo "Expected ${n_args_expected} arguments, but got ${n_args_received}." 2>&1
         exit 1
     fi
 }
+
+_validate_number_of_arguments one two three 3
+_validate_number_of_arguments one two three 2
+_validate_number_of_arguments one two three 4
 
 # vim: set filetype=sh fileformat=unix nowrap:
