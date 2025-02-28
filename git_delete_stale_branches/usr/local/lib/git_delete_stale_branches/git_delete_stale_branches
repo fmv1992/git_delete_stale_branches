@@ -14,22 +14,19 @@ function is_valid_simple_csv() {
 }
 
 function validate_number_of_arguments() {
-    _validate_number_of_arguments ${@} 2
-    local expected_number_of_arguments="${1}"
-    local error_message="${2}"
-    if _validate_number_of_arguments ${@} "${expected_number_of_arguments}"; then
-        echo "${error_message}" 2>&1
-        return 1
-    fi
-}
-
-function _validate_number_of_arguments() {
     # Get the number of arguments excluding the last one
-    local n_args_received=$(($# - 1))
+    local n_args_received="$(($# - 2))"
     # Get the last argument
-    local n_args_expected="${!#}"
+    local n_args_expected="${1}"
+    local error_message="${2}"
+    local -a arguments=("${@:2:n_args_received}")
 
     if ((n_args_received != n_args_expected)); then
+        if [[ -n ${error_message} ]]; then
+            echo "${error_message}" 2>&1
+        else
+            echo "Expected ${n_args_expected} arguments, but got ${n_args_received}." 2>&1
+        fi
         return 1
     fi
 }
