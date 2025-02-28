@@ -18,13 +18,69 @@ function _csv_three_header() {
 }
 
 function _csv_n_distinct_fields() {
+    local csv_file="${1}"
+    gawk --csv '
+    BEGIN { fields = 0; first = 1 }
+    {
+        if (NF != fields && first == 0) {
+            if (fields == 0) {
+                fields = NF
+            } else {
+                print "mixed"
+                exit 1
+            }
+        }
+        fields = NF
+        first = 0
+    }
+    END { print fields }
+    ' "${csv_file}" 2>/dev/null || echo "mixed"
 }
 
 function is_valid_simple_csv() {
-    # Valid CSVs will have either 2 fields or 3 fields, but not both.
-    #
-    # Valid CSVs will have one of the 2 accepted headers. The fields can be in
-    # any order.
+    local csv_file="${1}"
+    
+    # Get number of fields consistently used in the file
+    local n_fields=$(_csv_n_distinct_fields "${csv_file}")
+    
+    # If we got "mixed", the file has inconsistent number of fields
+    if [[ "${n_fields}" == "mixed" ]]; then
+        return 1
+    fi
+    
+    # For 2-field CSVs: no header required, just check field count
+    if [[ "${n_fields}" == "2" ]]; then
+        # Verify all lines match expected format (timestamp,branch)
+        gawk --csv '
+        NF == 2 && $1 ~ /^[0-9]+$/ {next}
+        {exit 1}
+        ' "${csv_file}" || return 1
+        return 0
+    fi
+    
+    # For 3-field CSVs: require header and validate format
+    if [[ "${n_fields}" == "3" ]]; then
+        # First get the expected header
+        local expected_header
+        expected_header=$(_csv_three_header)
+        
+        # Validate header and data format
+        gawk --csv -v expected="${expected_header}" '
+        NR == 1 {
+            # Check header matches expected
+            if ($0 != expected) {
+                exit 1
+            }
+            next
+        }
+        NF == 3 && $1 ~ /^[0-9]+$/ && $3 ~ /^[0-9]+$/ {next}
+        {exit 1}
+        ' "${csv_file}" || return 1
+        return 0
+    fi
+    
+    # Any other number of fields is invalid
+    return 1
 }
 
 function validate_number_of_arguments() {
@@ -32,8 +88,7 @@ function validate_number_of_arguments() {
     local n_args_received="$(($# - 1))"
     # Get the last argument
     local n_args_expected="${1:-0}"
-    # local -a arguments=("${@:1:n_args_received}")
-
+    
     if ((n_args_received != n_args_expected)); then
         echo "Expected ${n_args_expected} arguments, but got ${n_args_received}." >&2
         return 1
