@@ -9,24 +9,33 @@ function is_docker() {
     grep -E ':cpuset:/docker' -- "$cgroup" > /dev/null 2>&1
 }
 
+function _csv_two_header() {
+    printf 'timestamp_delete_if_commit_is_older,branch'
+}
+
+function _csv_three_header() {
+    printf 'timestamp_delete_if_commit_is_older,branch,timestamp_delete_after'
+}
+
+function _csv_n_distinct_fields() {
+}
+
 function is_valid_simple_csv() {
-    local is_valid=true
+    # Valid CSVs will have either 2 fields or 3 fields, but not both.
+    #
+    # Valid CSVs will have one of the 2 accepted headers. The fields can be in
+    # any order.
 }
 
 function validate_number_of_arguments() {
     # Get the number of arguments excluding the last one
-    local n_args_received="$(($# - 2))"
+    local n_args_received="$(($# - 1))"
     # Get the last argument
-    local n_args_expected="${1}"
-    local error_message="${2}"
-    local -a arguments=("${@:2:n_args_received}")
+    local n_args_expected="${1:-0}"
+    # local -a arguments=("${@:1:n_args_received}")
 
     if ((n_args_received != n_args_expected)); then
-        if [[ -n ${error_message} ]]; then
-            echo "${error_message}" 2>&1
-        else
-            echo "Expected ${n_args_expected} arguments, but got ${n_args_received}." 2>&1
-        fi
+        echo "Expected ${n_args_expected} arguments, but got ${n_args_received}." >&2
         return 1
     fi
 }
