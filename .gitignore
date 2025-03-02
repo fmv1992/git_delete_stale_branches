@@ -9,6 +9,7 @@
 !.gitignore
 !.gitkeep
 !*.hrl
+!*.gawk
 !*.jinja
 !makefile
 !*.md

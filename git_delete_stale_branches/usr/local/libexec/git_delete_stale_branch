@@ -3,31 +3,41 @@
 # Halt on error.
 set -euo pipefail
 
-official_file="${3}"
-delete_file="$(dirname "${official_file}")/deleted"
+REFERENCE_DIR="${REFERENCE_DIR:-}"
+source "${REFERENCE_DIR}/usr/local/lib/git_delete_stale_branches/git_delete_stale_branches"
+
+validate_number_of_arguments 5 $@
+
+timestamp_delete_if_commit_is_older_="${1}"
+branch_="${2}"
+timestamp_delete_after_="${3}"
+official_file_="${4}"
+now_="${5}"
+delete_file="$(dirname "${official_file_}")/deleted"
 
 if [[ ! -f ${delete_file} ]]; then
     echo "Deleted branch file «${delete_file}» not found." > /dev/stderr
     exit 1
 fi
 
-official_branch="$(cat "${official_file}")"
+# ???: This can become a list of protected branches.
+official_branch="$(cat "${official_file_}")"
 [[ -n ${official_branch} ]]
 [[ $(wc -l <<< "${official_branch}") -eq 1 ]]
 
-[[ ${official_branch} != ${2} ]]
+[[ ${official_branch} != ${branch_} ]]
 
 # If the last commit time of this branch comes before the deletion timestamp we
 # are ok to delete it.
 set +o pipefail
-last_commit_of_branch="$(git log --format='%at' "${2}" -- | head -n 1)"
+last_commit_of_branch="$(git log --format='%at' "${branch_}" -- | head -n 1)"
 set -o pipefail
 # If `last_commit_of_branch` is empty assume remote `origin`.
 #
 # ???: This is a shortcut
 if [[ -z $last_commit_of_branch ]]; then
     set +o pipefail
-    last_commit_of_branch="$(git log --format='%at' "origin/${2}" -- | head -n 1)"
+    last_commit_of_branch="$(git log --format='%at' "origin/${branch_}" -- | head -n 1)"
     set -o pipefail
 fi
 re='^[0-9]+$'
@@ -37,18 +47,29 @@ if ! [[ $last_commit_of_branch =~ $re ]]; then
     echo "error: '${last_commit_of_branch}' not a number or already deleted." >&2
     exit 0
 fi
-if [[ ${last_commit_of_branch} > ${1} ]]; then
-    echo "error: '${last_commit_of_branch}' comes after the saved timestamp ('${2}')." >&2
+if [[ ${last_commit_of_branch} > ${timestamp_delete_if_commit_is_older_} ]]; then
+    echo "error: branch '"${branch_}"': '${last_commit_of_branch}' comes after timestamp_delete_if_commit_is_older_=$timestamp_delete_if_commit_is_older_." >&2
+    exit 0
+fi
+
+# New logic: only delete if now is later than
+# `timestamp_delete_if_commit_is_older`.
+if ! [[ $timestamp_delete_if_commit_is_older_ =~ $re ]]; then
+    echo "error: 'timestamp_delete_if_commit_is_older=${timestamp_delete_if_commit_is_older}' not a number." >&2
+    exit 1
+fi
+if ((now_ < timestamp_delete_after_)); then
+    echo "error: branch '"${branch_}"' now=${now_} is less than timestamp_delete_after=${timestamp_delete_after_}." >&2
     exit 0
 fi
 
 git branch --all \
     | sed -E 's/.* //g' \
     | sed -E 's#.*/##g' \
-    | grep --fixed-strings --line-regexp --regexp "${2}" \
+    | grep --fixed-strings --line-regexp --regexp "${branch_}" \
     || exit 0
 
-git branch --force --delete "${2}" || true
-git push --force --delete origin "${2}" || true
+git branch --force --delete "${branch_}" || true
+git push --force --delete origin "${branch_}" || true
 
 # vim: set filetype=sh fileformat=unix nowrap:

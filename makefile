@@ -55,10 +55,7 @@ check_shell:
 
 test: build_prepare test_host test_docker .FORCE
 
-build_prepare: other/test/data/fake_repos_01.tar
-
-other/test/data/fake_repos_01.tar: ./other/test/data/create_tarballs
-	bash -xv ./other/test/data/create_tarballs
+build_prepare:
 
 test_host: .FORCE
 	bash -xv ./other/test/docker/host_test
