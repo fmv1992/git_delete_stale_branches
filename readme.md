@@ -4,6 +4,18 @@
 
 Safely delete your version controlled branches.
 
+Main use case:
+
+- I’m developing a feature on my `feat1` branch on computer A and computer B.
+
+- I work alternating development on both computers.
+
+- Once merged, one (or both) of the computers end up with stale, unused branches from that development (e.g. `feat1_a`, `feat1_b`, etc).
+
+  `git_delete_stale_branches` allows one to safely remove these branches by comparing timestamps that are inserted into a version controlled file. If there’s a commit that comes after the insertion timestamp, that branch does not get deleted. If the last commit precedes the timestamp, the branch gets deleted. Since both machines share these list of branches to be deleted, you end up with a cleaner development process.
+
+How to easily get Unix timestamp for vim users: `inoreabbrev nows <C-R>=strftime("%s")<CR>`.
+
 ## Man page
 
 `✂ --------------------------------------------------`
@@ -84,7 +96,23 @@ This flag is spurious but ensures that the user is aware that deletions will occ
     rm ./output/deb/*.deb
     make package down build test
 
+## Notes
+
+- `v0.1.x` requires a newer version of `gawk`, one that accepts `--csv` (`5.3.1` is certain to have it).
+
 ## TODO
+
+- Add a 3-field CSV version.
+
+- Support a 2-field CSV version and 3 field one.
+
+- Add a concrete usage for copy pasting…
+
+- Remove the cluttering verbosity that prevents understanding of what is being done.
+
+- `$HOME/backups/2024_08_23_17h_52m_56s_felipev_licitacoes_felipe_lucas_bugfix.tar.gz`:
+
+  `git log --format=%at origin/nojira_2_get_more_data_local` → `git log --format=%at -- origin/nojira_2_get_more_data_local`
 
 - Allow for deletion of remotes other than `origin`.
 

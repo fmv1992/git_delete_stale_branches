@@ -9,6 +9,7 @@ services:
                 - USER_GID
                 - USER_UID
             context: .
+            network: host
         entrypoint: ''
         stdin_open: true
         tty: true

@@ -29,7 +29,7 @@ cd ./git_delete_stale_branches_fake_git_repos_01
 git status
 
 # Ensure we have 3 branches.
-[[ $(git branch -a) == $(git branch -a | grep -E 'branch01|branch02|main') ]]
+[[ "$(git branch -a)" == "$(git branch -a | grep -E 'branch01|branch02|main')" ]]
 
 # Execute the deletion.
 git_delete_stale_branches --delete --git-directory $(pwd) --config-directory other/git/branches

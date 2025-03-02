@@ -1,11 +1,76 @@
 #! /usr/bin/env bash
 #
-# shellcheck disable=SC2251
+# ```
+# bash -xv other/test/docker/docker_test_02
+# ```
+#
+# Test using a non conventional directory structure.
 
 # Halt on error.
 set -euo pipefail
 
-# `commb1f40e0`: see this to re enable this test.
-exit 0
+source ./other/test/docker/test_lib
+
+# Go to execution directory.
+cd "$(git rev-parse --show-toplevel)"
+curdir=$(pwd)
+
+tarball="$(readlink --canonicalize './other/test/data/fake_repos_02.tar')"
+
+tmpdir="$(mktemp_gdsb)"
+[[ -n ${tmpdir} ]]
+[[ ${tmpdir} =~ ^/tmp/ ]]
+
+cd "${tmpdir}"
+tar -xf "${tarball}"
+cd ./git_delete_stale_branches_fake_git_repos_02
+
+[[ -d .git ]]
+
+# Create a new branch.
+git checkout main
+git checkout -b branch03
+echo 'busy work branch03' > busy_$(uuidgen | sed -E 's/-//g').txt
+git add --force -- .
+git commit -m "added busy work branch03"
+git checkout main
+
+mkdir another/
+mv other/git/branches/ another/branches
+pwd | xclip
+"${REFERENCE_DIR}/usr/local/bin/git_delete_stale_branches" --delete --git-directory "$(pwd)" --config-directory "./another/branches"
+
+set -x
+[[ "$(git branch -a | sort -u)" == "$(echo '
+  branch01
+  branch03
+* main
+' | sed --regexp-extended '/^$/d')" ]]
+
+# Ensure `timestamp_delete_after` is working.
+git checkout -b branch04
+git commit --allow-empty -m "added branch04"
+git checkout main
+delay=3
+now_="$(date '+%s')"
+now_little_ahead_in_the_future="$((now_ + 2))"
+now_more_ahead_in_the_future="$((now_ + delay))"
+echo "${now_little_ahead_in_the_future},branch04,${now_more_ahead_in_the_future}" >> ./another/branches/deleted
+"${REFERENCE_DIR}/usr/local/bin/git_delete_stale_branches" --delete --git-directory "$(pwd)" --config-directory "./another/branches"
+if git branch -a | grep --extended-regexp 'branch04'; then
+    :
+else
+    echo "Branch «branch04» not found." > /dev/stderr
+    exit 1
+fi
+
+sleep $((delay + 1))
+"${REFERENCE_DIR}/usr/local/bin/git_delete_stale_branches" --delete --git-directory "$(pwd)" --config-directory "./another/branches"
+if git branch -a | grep --extended-regexp 'branch04'; then
+    echo "Branch «branch04» found (and it should be deleted)." > /dev/stderr
+    exit 1
+else
+    :
+fi
 
 # vim: set filetype=sh fileformat=unix nowrap:

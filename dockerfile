@@ -1,4 +1,4 @@
-FROM ubuntu@sha256:9101220a875cee98b016668342c489ff0674f247f6ca20dfc91b91c0f28581ae
+FROM ubuntu@sha256:72297848456d5d37d1262630108ab308d3e9ec7ed1c3286a32fe09856619a782 AS original
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -13,6 +13,41 @@ RUN apt-get update && apt-get install --yes \
         python3 \
         recutils \
         sudo
+
+# Install a recent version of `gawk`. --- {{{
+FROM ubuntu@sha256:72297848456d5d37d1262630108ab308d3e9ec7ed1c3286a32fe09856619a782 AS gawk_builder
+RUN apt-get update && apt-get install --yes \
+        autoconf \
+        automake \
+        bison \
+        build-essential \
+        gcc \
+        git \
+        libtool \
+        m4 \
+        make \
+        mawk \
+        parallel \
+        perl \
+        texinfo
+RUN cd /tmp \
+        && git clone --recurse-submodules --jobs 8 -- https://git.savannah.gnu.org/git/gawk.git
+RUN cd /tmp/gawk \
+        && git checkout e405f5487b66eadd24d303a27c312f16bcca2ca4 \
+        && git reset --hard e405f5487b66eadd24d303a27c312f16bcca2ca4 \
+        && { git ls -z | parallel --verbose --max-args 10 --null -- 'sed --in-place --regexp-extended '"'"'s/^AC_PREREQ.*/# \0/g'"'"' ' || true ; } \
+        && sh ./configure \
+        && make \
+        && make install \
+        && gawk --version \
+        && cd / \
+        && rm -rf /tmp/gawk
+
+# --- }}}
+
+FROM original AS final
+
+COPY --from=gawk_builder /usr/local/bin/gawk /usr/local/bin/gawk
 
 ADD https://github.com/fmv1992/shell_argument_parsing_file/releases/download/v0.0.1/shell-argument-parsing-file_0.0.1-1_amd64.deb /tmp/1.deb
 RUN dpkg -i /tmp/1.deb
