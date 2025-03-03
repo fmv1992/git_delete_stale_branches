@@ -47,7 +47,7 @@ if ! [[ $last_commit_of_branch =~ $re ]]; then
     echo "error: '${last_commit_of_branch}' not a number or already deleted." >&2
     exit 0
 fi
-if [[ ${last_commit_of_branch} > ${timestamp_delete_if_commit_is_older_} ]]; then
+if (( ${last_commit_of_branch} > ${timestamp_delete_if_commit_is_older_} )); then
     echo "error: branch '"${branch_}"': '${last_commit_of_branch}' comes after timestamp_delete_if_commit_is_older_=$timestamp_delete_if_commit_is_older_." >&2
     exit 0
 fi

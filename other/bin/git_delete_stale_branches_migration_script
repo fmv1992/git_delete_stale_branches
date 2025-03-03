@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Halt on error.
+set -euo pipefail
+
+# Go to execution directory.
+cd "$(dirname $(readlink -f "${0}"))"
+cd "$(git rev-parse --show-toplevel)"
+[[ -d ./.git ]]
+
+n_args_=0
+if (($# != n_args_)); then
+    echo "Expected $n_args_ arguments. Got $#." > /dev/stderr
+    exit 1
+fi
+
+find "$HOME" -type f -iname 'deleted' -print0 \
+    | parallel \
+        --verbose \
+        --no-run-if-empty \
+        --null \
+        --group \
+        --keep-order \
+        --jobs $(nproc) \
+        --max-args 1 \
+        -- '
+set -euo pipefail
+if grep '"'"'timestamp_delete_if_commit_is_older,branch,timestamp_delete_after'"'"' {} &> /dev/null; then
+    exit 0
+else
+    {
+        echo '"'"'timestamp_delete_if_commit_is_older,branch,timestamp_delete_after'"'"'
+        sed --regexp-extended '"'"'s#$#,0#g'"'"' < {}
+    } | sponge {}
+fi
+'
+
+# vim: set filetype=sh fileformat=unix nowrap:

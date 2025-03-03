@@ -7,25 +7,25 @@ TEST_BRANCH_02='_bogus_02-'
 TEST_BRANCH_03='normal_name'
 
 function create_bogus_branch() {
-    validate_number_of_arguments 0
+    validate_number_of_arguments 0 || return $?
     git checkout main
-    git checkout -b $1
+    git checkout -b "$1"
     echo 'busy work $1' > busy_$(uuidgen | sed -E 's/-//g').txt
     git add --force -- .
     git commit -m "added busy work $1"
-    git push --force --set-upstream origin ${1}
+    git push --force --set-upstream origin "${1}"
     # git checkout main
 }
 
 function get_fresh_clean_clone() {
     {
-        validate_number_of_arguments 0
+        validate_number_of_arguments 0 || return $?
         [[ -n ${PROJECT} ]]
-        tmpdir=$(mktemp --directory --tmpdir=/tmp/ tmp.$(basename $0).${PROJECT}.$(date '+%s').XXXXXX)
-        cd ${tmpdir}
+        tmpdir=$(mktemp --directory --tmpdir=/tmp/ tmp.$(basename "$0")."${PROJECT}".$(date '+%s').XXXXXX)
+        cd "${tmpdir}" || exit 1
         # Start from a ground state: there's only a `main` branch and a `dev` branch.
         git clone --recurse-submodules --jobs 8 -- https://github.com/fmv1992/private_repos_for_testing
-        cd ./private_repos_for_testing
+        cd ./private_repos_for_testing || exit 1
         for onebranch in ${TEST_BRANCH_01} ${TEST_BRANCH_02} ${TEST_BRANCH_03}; do
             git branch --delete --force ${onebranch} || true
             git push --force --delete origin ${onebranch} || true
@@ -36,7 +36,7 @@ function get_fresh_clean_clone() {
 }
 
 function clean_up_test_repos() {
-    validate_number_of_arguments 0
+    validate_number_of_arguments 0 || return $?
     # Clean up.
     git checkout -- .
     git checkout main
@@ -47,7 +47,7 @@ function clean_up_test_repos() {
 }
 
 function test_repos_is_clean() {
-    validate_number_of_arguments 0
+    validate_number_of_arguments 0 || return $?
     [[ "$(git branch -a)" == "$(echo '
 * main
   remotes/origin/HEAD -> origin/main
@@ -56,9 +56,9 @@ function test_repos_is_clean() {
 }
 
 function mktemp_gdsb() {
-    validate_number_of_arguments 0
+    validate_number_of_arguments 0 || return $?
     [[ -n ${PROJECT} ]]
-    mktemp --directory --tmpdir=/tmp/ tmp.$(basename $0).${PROJECT}.$(date '+%s').XXXXXX
+    mktemp --directory --tmpdir=/tmp/ tmp.$(basename "$0")."${PROJECT}".$(date '+%s').XXXXXX
 }
 
 # vim: set filetype=sh fileformat=unix nowrap:

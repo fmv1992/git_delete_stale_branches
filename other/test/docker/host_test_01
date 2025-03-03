@@ -43,14 +43,14 @@ git checkout ${TEST_BRANCH_03}
 # Delete some bogus branches.
 git_directory=$(pwd)
 [[ ${git_directory} =~ ^/tmp/ ]]
-[[ -n "$(find ${git_directory} -iname 'busy_*.txt')" ]]
+[[ -n "$(find "${git_directory}" -iname 'busy_*.txt')" ]]
 # Ensure we have `TEST_BRANCH_01`.
 git branch -a | grep -E ${TEST_BRANCH_01}
 # Ensure we are taking all branches into account.
 [[ "$(git branch -a)" == "$(git branch -a | grep -E 'main|_bogus_01_|_bogus_02-|normal_name')" ]]
 # Delete the stale branches.
 # ???
-bash ${curdir}/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory ${git_directory} --config-directory ${git_directory}/other/git/branches
+bash "${curdir}"/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory "${git_directory}" --config-directory "${git_directory}"/other/git/branches
 # Test that the stale branches were deleted.
 #
 # Ensure only the specified branches were deleted.
@@ -59,12 +59,12 @@ bash ${curdir}/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branch
 
 # Try to delete the `main` branch.
 echo "$(date '+%s'),main" >> other/git/branches/deleted
-! bash ${curdir}/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory ${git_directory} --config-directory ${git_directory}/other/git/branches
+! bash "${curdir}"/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory "${git_directory}" --config-directory "${git_directory}"/other/git/branches
 grep --invert-match --fixed-strings -- 'main' other/git/branches/deleted | sponge other/git/branches/deleted
 
 # Test that we cannot delete a branch after a commit time.
 echo "$(date --date 'today - 7 days' '+%s'),${TEST_BRANCH_02}" >> other/git/branches/deleted
-! bash ${curdir}/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory ${git_directory} --config-directory ${git_directory}/other/git/branches
+! bash "${curdir}"/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory "${git_directory}" --config-directory "${git_directory}"/other/git/branches
 [[ $(git branch -a) == $(git branch -a | grep -E 'main|_bogus_02-|normal_name') ]]
 # But then, if we commit we can delete it.
 grep --invert-match --fixed-strings -- ${TEST_BRANCH_02} other/git/branches/deleted | sponge other/git/branches/deleted
@@ -72,7 +72,7 @@ touch test_${TEST_BRANCH_02}.txt
 git add --force .
 git commit -m "added new work"
 echo "$(date --date 'today + 7 days' '+%s'),${TEST_BRANCH_02}" >> other/git/branches/deleted
-bash ${curdir}/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory ${git_directory} --config-directory ${git_directory}/other/git/branches
+bash "${curdir}"/./git_delete_stale_branches/usr/local/bin/git_delete_stale_branches --delete --git-directory "${git_directory}" --config-directory "${git_directory}"/other/git/branches
 [[ "$(git branch -a)" == "$(git branch -a | grep -E 'main|normal_name')" ]]
 
 clean_up_test_repos
