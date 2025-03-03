@@ -12,7 +12,7 @@
 %allowed: version git_hash
 %type: version line
 
-version: 0.0.2
+version: 0.1.0
 git_hash:
 
 %rec: Description
@@ -54,6 +54,16 @@ description:
 + Used to install packages during the container runtime.
 stage: test
 dependency_level: docker_build
+
+name: gawk
+description: 
++ Used to install packages during the container runtime.
++ 
++ See <https://github.com/fmv1992/git_delete_stale_branches/blob/b5be22f9c9f71667765b5e241fbf36a5fecfb364/readme.md#L108>:
++ 
++ > - `v0.1.x` requires a newer version of `gawk`, one that accepts `--csv` (`5.3.1` is certain to have it).
+stage: use
+dependency_level: operating_system_package
 
 name: git
 description: 

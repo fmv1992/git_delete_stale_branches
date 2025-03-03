@@ -1,11 +1,7 @@
 #! /usr/bin/env bash
 
 # Halt on error.
-set -euxo pipefail
-
-# function git_check_branch_exists() {
-#   git rev-parse --verify <branch_name>
-# }
+set -euo pipefail
 
 # Go to execution directory.
 cd "$(dirname $(readlink -f "${0}"))"

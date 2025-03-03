@@ -29,14 +29,6 @@ fi
 # _associative_arrays_are_equal empty_array arguments
 
 # ✂ --------------------------------------------------
-function validate_other_git_branches_deleted_file() {
-    validated="$(grep -E '^[0-9]+,.*$' -- "${1}")"
-    if diff <(printf "%s\n" "${validated}") "${1}"; then
-        return 0
-    else
-        return 1
-    fi
-}
 
 expected_number_of_arguments=5
 
@@ -56,7 +48,7 @@ fi
 # Unquote the argument.
 config_directory="$(echo "${arguments['config-directory']}" | xargs echo)"
 if ! [[ -d ${config_directory} ]]; then
-    echo "The second argument should be a git directory (was '${config_directory}')." > /dev/stderr
+    echo "The second argument should be a directory (was '${config_directory}')." > /dev/stderr
     exit 1
 fi
 
@@ -80,36 +72,34 @@ if [[ ! -f ${official_file} ]]; then
     exit 1
 fi
 
-validate_other_git_branches_deleted_file "${delete_file}"
-
 # Go to execution directory.
 cd "${git_directory}"
-git rev-parse --git-dir 2> /dev/null
+if git rev-parse --git-dir 2> /dev/null; then
+    :
+else
+    echo "The «${git_directory}» is not a valid git directory." > /dev/stderr
+    exit 1
+fi
 
-while IFS=, read -r date_ branch_; do
-    "${REFERENCE_DIR}/usr/local/libexec/git_delete_stale_branch" "${date_}" "${branch_}" "${official_file}"
-done < "${delete_file}"
+# As of `v0.1.x` we are supporting a 3 column CSV.
+#
+# * CSV "schema" for the original 2 field use case:
+#
+#   ```
+#   timestamp_delete_if_commit_is_older,branch
+#   1739817094,nojira_81
+#   ```
+#
+# * CSV "schema" for the original 3 field use case:
+#
+#   ```
+#   timestamp_delete_if_commit_is_older,branch,timestamp_delete_after
+#   1739817094,nojira_81,1741366313
+#   ```
 
-# vim: set filetype=sh fileformat=unix nowrap:
-# -------------------------------------------------- ✂
-
-# if [[ ${arguments[help]:-false} == 'true' ]]; then
-#     git_delete_stale_branches_help
-#     exit 0
-# fi
-#
-# if [[ ${arguments[verbose]:-false} == 'true' ]]; then
-#     bash ${REFERENCE_DIR}/usr/local/share/git_delete_stale_branches/tests/test_01.sh --test
-#     set -x
-# fi
-#
-# if [[ ${arguments[test]:-SENTINEL} != 'SENTINEL' ]]; then
-#     bash ${REFERENCE_DIR}/usr/local/share/git_delete_stale_branches/tests/test_01.sh --test
-# else
-#     echo "Unrecognized entrypoint: \`$@\`." > /dev/stderr
-#     exit 1
-# fi
-#
-# echo "Tests are done." > /dev/stderr
+print_normalized_csv "${delete_file}" \
+    | while IFS=, read -r timestamp_delete_if_commit_is_older_ branch_ timestamp_delete_after; do
+        "${REFERENCE_DIR}/usr/local/libexec/git_delete_stale_branch" "${timestamp_delete_if_commit_is_older_}" "${branch_}" "${timestamp_delete_after}" "${official_file}" "$(date '+%s')"
+    done
 
 # vim: set filetype=sh fileformat=unix nowrap:

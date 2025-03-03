@@ -4,6 +4,18 @@
 
 Safely delete your version controlled branches.
 
+Main use case:
+
+- I’m developing a feature on my `feat1` branch on computer A and computer B.
+
+- I work alternating development on both computers.
+
+- Once merged, one (or both) of the computers end up with stale, unused branches from that development (e.g. `feat1_a`, `feat1_b`, etc).
+
+  `git_delete_stale_branches` allows one to safely remove these branches by comparing timestamps that are inserted into a version controlled file. If there’s a commit that comes after the insertion timestamp, that branch does not get deleted. If the last commit precedes the timestamp, the branch gets deleted. Since both machines share these list of branches to be deleted, you end up with a cleaner development process.
+
+How to easily get Unix timestamp for vim users: `inoreabbrev nows <C-R>=strftime("%s")<CR>`.
+
 ## Man page
 
 `✂ --------------------------------------------------`
@@ -32,19 +44,26 @@ See how it is used here: <https://github.com/fmv1992/git_delete_stale_branches/b
 
       main
 
-  Example in Github: <https://github.com/fmv1992/git_delete_stale_branches/blob/8b077a6370d282a789853ebc29a680465eb25e89/other/git/branches/official#L1>.
+  Example in Github: <https://github.com/fmv1992/git_delete_stale_branches/blob/main/other/git/branches/official#L1>.
 
-- `deleted` file: a headerless CSV with 2 fields: `unix_epoch,branch_name` where `unix_epoch` is the unix epoch of the time when the branch is marked for deletion and `branch_name` is the branch name.
+- `deleted` file: a CSV with 3 fields: `timestamp_delete_if_commit_is_older,branch,timestamp_delete_after` where:
+
+  - `timestamp_delete_if_commit_is_older`: a unix timestamp registering the time of the intention of deletion. If there’s a commit on `branch` that comes after this, it will not be deleted.
+
+  - `branch`: the branch to be deleted.
+
+  - `timestamp_delete_after`: a unix timestamp “scheduling” a time for deletion. Use zero (or leave empty) if you want it to be deleted right away. Use `date --date 'now + 7 days' '+%s'` for the deletion to happen only next week.
+
+  For vim users, `nows <C-R>=strftime("%s")<CR>` and `inoreabbrev nextweek <C-R>=system("date --date 'now + 7 days + 10 seconds' '+%s'")[:-2]<CR>` might come in handy.
 
   Example:
 
-      1677801916,t_204_a_yaml_in_vim_local
-      1675099986,t_149_replace_old_scala_metals
-      1675099986,t_192_a_local
-      1651164877,dev_grammar_vim_grammarous
-      1648935017,dev_find_out_why_makeprg_is_stalling_improved_01
+      timestamp_delete_if_commit_is_older,branch,timestamp_delete_after
+      1739817094,nojira_81,1741366313
+      1739817095,feature_branch_1,1741366314
+      1739817096,bugfix_123,1741366315
 
-  Example in Github: <https://github.com/fmv1992/git_delete_stale_branches/blob/8b077a6370d282a789853ebc29a680465eb25e89/other/git/branches/deleted#L1>.
+  Example in Github: <https://github.com/fmv1992/git_delete_stale_branches/blob/main/other/test/test_library/csv_valid_02.csv#L1>.
 
 #### Recommended usage
 
@@ -84,11 +103,17 @@ This flag is spurious but ensures that the user is aware that deletions will occ
     rm ./output/deb/*.deb
     make package down build test
 
+## Notes
+
+- `v0.1.x` requires a newer version of `gawk`, one that accepts `--csv` (`5.3.1` is certain to have it).
+
 ## TODO
 
-- Add a 3-field CSV version.
+- ̶A̶̶̶d̶̶̶d̶̶ ̶a̶̶ ̶3̶̶̶-̶̶̶f̶̶̶i̶̶̶e̶̶̶l̶̶̶d̶̶ ̶C̶̶̶S̶̶̶V̶̶ ̶v̶̶̶e̶̶̶r̶̶̶s̶̶̶i̶̶̶o̶̶̶n̶̶̶.̶̶
 
-- Support a 2-field CSV version and 3 field one.
+  - ̶U̶̶̶p̶̶̶d̶̶̶a̶̶̶t̶̶̶e̶̶ ̶d̶̶̶o̶̶̶c̶̶̶s̶̶̶.̶̶
+
+- ̶S̶̶̶u̶̶̶p̶̶̶p̶̶̶o̶̶̶r̶̶̶t̶̶ ̶a̶̶ ̶2̶̶̶-̶̶̶f̶̶̶i̶̶̶e̶̶̶l̶̶̶d̶̶ ̶C̶̶̶S̶̶̶V̶̶ ̶v̶̶̶e̶̶̶r̶̶̶s̶̶̶i̶̶̶o̶̶̶n̶̶ ̶a̶̶̶n̶̶̶d̶̶ ̶3̶̶ ̶f̶̶̶i̶̶̶e̶̶̶l̶̶̶d̶̶ ̶o̶̶̶n̶̶̶e̶̶̶.̶̶
 
 - Add a concrete usage for copy pasting…
 

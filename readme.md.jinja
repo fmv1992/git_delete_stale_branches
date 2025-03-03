@@ -3,6 +3,18 @@
 
 Safely delete your version controlled branches.
 
+Main use case:
+
+*   I'm developing a feature on my `feat1` branch on computer A and computer B.
+
+*   I work alternating development on both computers.
+
+*   Once merged, one (or both) of the computers end up with stale, unused branches from that development (e.g. `feat1_a`, `feat1_b`, etc).
+
+    `git_delete_stale_branches` allows one to safely remove these branches by comparing timestamps that are inserted into a version controlled file. If there's a commit that comes after the insertion timestamp, that branch does not get deleted. If the last commit precedes the timestamp, the branch gets deleted. Since both machines share these list of branches to be deleted, you end up with a cleaner development process.
+
+How to easily get Unix timestamp for vim users: `inoreabbrev nows <C-R>=strftime("%s")<CR>`.
+
 ## Man page
 
 `✂ --------------------------------------------------`
@@ -35,11 +47,17 @@ rm ./output/deb/*.deb
 make package down build test
 ```
 
+## Notes
+
+*   `v0.1.x` requires a newer version of `gawk`, one that accepts `--csv` (`5.3.1` is certain to have it).
+
 ## TODO
 
-*   Add a 3-field CSV version.
+*   ̶A̶̶̶d̶̶̶d̶̶ ̶a̶̶ ̶3̶̶̶-̶̶̶f̶̶̶i̶̶̶e̶̶̶l̶̶̶d̶̶ ̶C̶̶̶S̶̶̶V̶̶ ̶v̶̶̶e̶̶̶r̶̶̶s̶̶̶i̶̶̶o̶̶̶n̶̶̶.̶̶
 
-*   Support a 2-field CSV version and 3 field one.
+    *   ̶U̶̶̶p̶̶̶d̶̶̶a̶̶̶t̶̶̶e̶̶ ̶d̶̶̶o̶̶̶c̶̶̶s̶̶̶.̶̶
+
+*   ̶S̶̶̶u̶̶̶p̶̶̶p̶̶̶o̶̶̶r̶̶̶t̶̶ ̶a̶̶ ̶2̶̶̶-̶̶̶f̶̶̶i̶̶̶e̶̶̶l̶̶̶d̶̶ ̶C̶̶̶S̶̶̶V̶̶ ̶v̶̶̶e̶̶̶r̶̶̶s̶̶̶i̶̶̶o̶̶̶n̶̶ ̶a̶̶̶n̶̶̶d̶̶ ̶3̶̶ ̶f̶̶̶i̶̶̶e̶̶̶l̶̶̶d̶̶ ̶o̶̶̶n̶̶̶e̶̶̶.̶̶
 
 *   Add a concrete usage for copy pasting...
 

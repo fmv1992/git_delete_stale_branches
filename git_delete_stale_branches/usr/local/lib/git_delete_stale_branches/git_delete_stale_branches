@@ -3,13 +3,33 @@
 # Parse CLI arguments defined in a recfile and put them in an associative
 # array.
 
-# Halt on error.
-set -euo pipefail
-
 function is_docker() {
     local cgroup=/proc/1/cgroup
     test -f "$cgroup"
     grep -E ':cpuset:/docker' -- "$cgroup" > /dev/null 2>&1
+}
+
+function validate_number_of_arguments() {
+    # Get the number of arguments excluding the last one
+    local n_args_received="$(($# - 1))"
+    # Get the last argument
+    local n_args_expected="${1:-0}"
+
+    if ((n_args_received != n_args_expected)); then
+        echo "Expected ${n_args_expected} arguments, but got ${n_args_received}." >&2
+        return 1
+    fi
+}
+
+function print_normalized_csv() {
+    if validate_number_of_arguments 1 $@; then
+        :
+    else
+        return 1
+    fi
+    local csv_file="${1}"
+
+    gawk --csv -f "${REFERENCE_DIR}/usr/local/lib/git_delete_stale_branches/print_csv_fields.gawk" < "${csv_file}"
 }
 
 # vim: set filetype=sh fileformat=unix nowrap:

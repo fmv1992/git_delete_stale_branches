@@ -1,0 +1,4 @@
+timestamp_delete_if_commit_is_older,branch,timestamp_delete_after
+1739817094,nojira_81,1741366313
+1739817095,feature_branch_1,1741366314
+1739817096,bugfix_123,1741366315
