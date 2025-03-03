@@ -7,7 +7,7 @@
 # Test using a non conventional directory structure.
 
 # Halt on error.
-set -euxo pipefail
+set -euo pipefail
 
 # Go to execution directory.
 cd "$(dirname $(readlink -f "${0}"))"

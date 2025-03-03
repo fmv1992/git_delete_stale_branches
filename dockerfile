@@ -1,20 +1,11 @@
-FROM ubuntu@sha256:72297848456d5d37d1262630108ab308d3e9ec7ed1c3286a32fe09856619a782 AS original
-
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-ARG PROJECT
-run set -x ; [[ -n $PROJECT ]]
-ENV PROJECT $PROJECT
-
-ARG DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update && apt-get install --yes \
-        git \
-        python3 \
-        recutils \
-        sudo
-
 # Install a recent version of `gawk`. --- {{{
+# This is necessary because of
+# <https://github.com/fmv1992/git_delete_stale_branches/blob/0562cd3440413effc9f84bd07af87696b3a290c1/git_delete_stale_branches/usr/local/lib/git_delete_stale_branches/git_delete_stale_branches#L32>,
+# i.e. `gawk` uses the `--csv` option that is not available on `ubuntu` images
+# as of 2025-03-02.
+#
+# This probably can be deleted in a few years from today.
+
 FROM ubuntu@sha256:72297848456d5d37d1262630108ab308d3e9ec7ed1c3286a32fe09856619a782 AS gawk_builder
 RUN apt-get update && apt-get install --yes \
         autoconf \
@@ -45,8 +36,25 @@ RUN cd /tmp/gawk \
 
 # --- }}}
 
-FROM original AS final
+FROM ubuntu@sha256:72297848456d5d37d1262630108ab308d3e9ec7ed1c3286a32fe09856619a782 AS final
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+ARG PROJECT
+run set -x ; [[ -n $PROJECT ]]
+ENV PROJECT $PROJECT
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# We install `gawk` just to satisfy `checkinstall`.
+RUN apt-get update && apt-get install --yes \
+        gawk \
+        git \
+        python3 \
+        recutils \
+        sudo
+
+# We overwrite the original gawk here.
 COPY --from=gawk_builder /usr/local/bin/gawk /usr/local/bin/gawk
 
 ADD https://github.com/fmv1992/shell_argument_parsing_file/releases/download/v0.0.1/shell-argument-parsing-file_0.0.1-1_amd64.deb /tmp/1.deb
