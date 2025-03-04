@@ -29,7 +29,11 @@ git_delete_stale_branches – Safely delete your version controlled branches.
 
 **git_delete_stale_branches** safely deletes your version controlled branches. It allows one to version control branches that are not necessary anymore and delete these checked out branches safely in another machine. Imagine that you are developing a branch on a machine A and on a machine B. What happens when you merge that branch or simply want to delete it? Will you remember which branches are ok to delete when you use machine B? Or what happens if you try to sync deleted branches from git when checked out on a branch that needs deletion? This is where **git_delete_stale_branches** steps in.
 
-See how it is used here: <https://github.com/fmv1992/git_delete_stale_branches/blob/8b077a6370d282a789853ebc29a680465eb25e89/makefile#L150>.
+[See how it is used here](https://github.com/fmv1992/git_delete_stale_branches/blob/8b077a6370d282a789853ebc29a680465eb25e89/makefile#L150):
+
+```
+git_delete_stale_branches --delete --git-directory . --config-directory ./other/git/branches
+```
 
 ## Relevant files
 
@@ -51,7 +55,7 @@ See how it is used here: <https://github.com/fmv1992/git_delete_stale_branches/b
 
     *   `timestamp_delete_after`: a unix timestamp "scheduling" a time for deletion. Use zero (or leave empty) if you want it to be deleted right away. Use `date --date 'now + 7 days' '+%s'` for the deletion to happen only next week.
 
-    For vim users, `nows <C-R>=strftime("%s")<CR>` and `inoreabbrev nextweek <C-R>=system("date --date 'now + 7 days + 10 seconds' '+%s'")[:-2]<CR>` might come in handy.
+    For vim users, `inoreabbrev nows <C-R>=strftime("%s")<CR>` and `inoreabbrev nextweek <C-R>=system("date --date 'now + 7 days + 10 seconds' '+%s'")[:-2]<CR>` might come in handy.
 
     Example:
 
